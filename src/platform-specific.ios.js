@@ -22,8 +22,14 @@ function _showAddPassControllerFromFile(Module, filePath) {
   return Module.showAddPassControllerFromFile(filePath);
 }
 
+function _showViewControllerWithMultiplePasses(Module, healthPassString) {
+  return Module.showViewControllerWithMultiplePasses(healthPassString);
+}
+
+
 module.exports = {
   _canAddPasses,
   _showAddPassControllerFromURL,
   _showAddPassControllerFromFile,
+  _showViewControllerWithMultiplePasses,
 }

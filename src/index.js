@@ -1,6 +1,6 @@
 import { NativeModules } from 'react-native';
 const { RNWalletModule } = NativeModules;
-import { _canAddPasses, _showAddPassControllerFromURL, _showAddPassControllerFromFile } from './platform-specific';
+import { _canAddPasses, _showAddPassControllerFromURL, _showAddPassControllerFromFile,_showViewControllerWithMultiplePasses } from './platform-specific';
 
 /**
  * Check if you can add passes.
@@ -30,8 +30,19 @@ function showAddPassControllerFromFile(filepath) {
   return _showAddPassControllerFromFile(RNWalletModule, filepath);
 }
 
+/**
+ * Show the pass controller for the provided filepath.
+ * The resolving promise will contain a boolean saying if the pass was added or not.
+ * @param filepath File path pkpass file
+ * @return Promise Passing a boolean
+ */
+function showViewControllerWithMultiplePasses(healthPassString) {
+  return _showViewControllerWithMultiplePasses(RNWalletModule, healthPassString);
+}
+
 module.exports = {
   canAddPasses,
   showAddPassControllerFromURL,
-  showAddPassControllerFromFile
+  showAddPassControllerFromFile,
+  showViewControllerWithMultiplePasses
 }

@@ -95,6 +95,50 @@ RCT_EXPORT_METHOD(
     [viewController presentViewController:passController animated:YES completion:nil];
 }
 
+RCT_EXPORT_METHOD(
+                  showViewControllerWithMultiplePasses:(NSString *)healthPassString
+                  resolver:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject
+                  ) {
+    NSError *passError;
+    NSData *healthdata = [healthPassString dataUsingEncoding:NSUTF8StringEncoding];
+    NSMutableDictionary *dict=[NSJSONSerialization JSONObjectWithData:healthdata options:kNilOptions error:&passError];
+    if (passError) {
+        reject(kRejectCode, @"The pass is invalid", passError);
+        return;
+    }
+    NSMutableArray *passes = [NSMutableArray array];
+    NSMutableDictionary *passesDict = [dict valueForKey:@"passes"];
+    if ( passesDict != nil ) {
+        for (NSDictionary *userData in passesDict) {
+            
+            NSMutableData *data = [[NSMutableData alloc] initWithCapacity: [[userData valueForKey:@"data"] count]];
+            for( NSNumber *number in [userData valueForKey:@"data"]) {
+                char byte = [number charValue];
+                [data appendBytes: &byte length: 1];
+            }
+            if (data != nil) {
+                PKPass *passObject = [[PKPass alloc]initWithData:data error:&passError];
+                if (passError) {
+                    reject(kRejectCode, @"The pass is invalid", passError);
+                    return;
+                }
+                [passes addObject:passObject];
+            }
+        }
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+            
+            UIViewController *viewController = [UIApplication sharedApplication].keyWindow.rootViewController;
+            PKAddPassesViewController *passController = [[PKAddPassesViewController alloc] initWithPasses:passes];
+            passController.delegate = self;
+            self.resolveBlock = resolve;
+            while (viewController.presentedViewController) {
+                viewController = viewController.presentedViewController;
+            }
+            [viewController presentViewController:passController animated:YES completion:nil];
+        });
+    }
+}
 #pragma mark - PKAddPassesViewControllerDelegate
 
 - (void)addPassesViewControllerDidFinish:(PKAddPassesViewController *)controller
